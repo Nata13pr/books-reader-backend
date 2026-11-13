@@ -10,6 +10,37 @@ const {HttpError, ctrlWrapper} = require("../helpers");
 
 const {SECRET_KEY} = process.env;
 
+
+const nodemailer = require("nodemailer");
+require('dotenv').config();
+
+const {GMAIL_PASSWORD} = process.env;
+
+const nodemailerConfig = {
+    host: 'smtp.gmail.com',
+    poкt: 465,
+    secure: true,
+    auth: {
+        user: 'nata13pr@gmail.com',
+        pass: GMAIL_PASSWORD
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+}
+
+const transport = nodemailer.createTransport(nodemailerConfig);
+const email = {
+    to: "ponem99624@jcaton.com",
+    from: "nata13pr@gmail.com",
+    subject: "Test email",
+    html: "<p><strong>Test email</strong> from localhost:3000</p>"
+}
+
+transport.sendMail(email)
+    .then(() => console.log("Email send success"))
+    .catch(error => console.log(error.message));
+
 const avatarsDir = path.join(__dirname, "../", "public", "avatars")
 
 const register = async (req, res) => {
@@ -22,7 +53,6 @@ const register = async (req, res) => {
 
     const hashPassword = await bcrypt.hash(password, 10);
     const avatarURL = gravatar.url(email);
-    console.log(avatarURL, 'eeeeeeeeeeeeeeeeeee');
 
     const newUser = await User.create({...req.body, password: hashPassword, avatarURL});
 
@@ -76,7 +106,7 @@ const logout = async (req, res) => {
 const updateAvatar = async (req, res) => {
     const {_id} = req.user;
     const {path: tempUpload, originalname} = req.file;
-    const filename=`${_id}_${originalname}`
+    const filename = `${_id}_${originalname}`
     const resultUpload = path.join(avatarsDir, filename)
     await fs.rename(tempUpload, resultUpload)
     const avatarURL = path.join('avatars', filename)
